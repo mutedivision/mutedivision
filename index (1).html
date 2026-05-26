@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mute Division</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #080808;
+    --white: #f0ede8;
+    --offwhite: #c8c4bc;
+    --purple: #7c3aed;
+    --purple-dim: #4c1d95;
+    --purple-glow: rgba(124, 58, 237, 0.18);
+    --purple-line: rgba(124, 58, 237, 0.5);
+    --gray: #1a1a1a;
+    --mid: #2e2e2e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    cursor: crosshair;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--purple); color: var(--white); }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 3rem;
+    border-bottom: 1px solid rgba(240,237,232,0.06);
+    backdrop-filter: blur(12px);
+    background: rgba(8,8,8,0.7);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--purple); }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  nav ul a {
+    color: var(--offwhite);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  nav ul a:hover { color: var(--purple); }
+
+  /* HERO */
+  #hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 60%, rgba(124,58,237,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ORB CANVAS */
+  #orbCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .hero-content {
+    text-align: center;
+    z-index: 2;
+    animation: fadeUp 1.2s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 14vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    position: relative;
+  }
+
+  .hero-title .division {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--offwhite);
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    letter-spacing: 0.25em;
+    margin-top: 0.2em;
+  }
+
+  .hero-sub {
+    margin-top: 2rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--offwhite);
+    opacity: 0.6;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--offwhite);
+    opacity: 0.35;
+    animation: float 2.5s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--purple), transparent);
+  }
+
+  /* DIVIDER WAVE BAR */
+  .wave-divider {
+    width: 100%;
+    height: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wave-divider canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* SECTION SHARED */
+  section {
+    padding: 7rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    letter-spacing: 0.06em;
+    color: var(--white);
+    margin-bottom: 3rem;
+  }
+
+  /* ABOUT */
+  #about {
+    border-top: 1px solid rgba(240,237,232,0.06);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: start;
+  }
+
+  .about-text p {
+    font-size: 0.85rem;
+    line-height: 2;
+    color: var(--offwhite);
+    opacity: 0.75;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 3rem;
+    margin-top: 2.5rem;
+  }
+
+  .stat .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .stat .num span { color: var(--purple); }
+
+  .stat .lbl {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--offwhite);
+    opacity: 0.5;
+    margin-top: 0.3rem;
+  }
+
+  /* Inline waveform for about */
+  .about-visual {
+    position: relative;
+    height: 280px;
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .about-visual canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .about-visual-label {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--purple);
+    opacity: 0.7;
+  }
+
+  /* ARTISTS */
+  #artists {
+    border-top: 1px solid rgba(240,237,232,0.06);
+  }
+
+  .artists-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+  }
+
+  .artist-card {
+    position: relative;
+    aspect-ratio: 3/4;
+    background: var(--gray);
+    overflow: hidden;
+    cursor: pointer;
+    group: true;
+  }
+
+  .artist-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(8,8,8,0.9) 0%, transparent 50%);
+    z-index: 1;
+  }
+
+  .artist-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(124,58,237,0);
+    transition: border-color 0.4s;
+    z-index: 3;
+  }
+
+  .artist-card:hover::after {
+    border-color: var(--purple-line);
+  }
+
+  .artist-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray);
+    transition: background 0.4s;
+  }
+
+  .artist-card:hover .artist-placeholder {
+    background: #141414;
+  }
+
+  .artist-bars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    opacity: 0.15;
+    transition: opacity 0.4s;
+  }
+
+  .artist-card:hover .artist-bars { opacity: 0.3; }
+
+  .artist-bar {
+    width: 3px;
+    background: var(--white);
+    border-radius: 1px;
+    animation: barPulse var(--dur, 1.2s) ease-in-out infinite alternate;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .artist-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 1.25rem;
+    z-index: 2;
+    transform: translateY(6px);
+    transition: transform 0.3s;
+  }
+
+  .artist-card:hover .artist-info { transform: translateY(0); }
+
+  .artist-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    display: block;
+  }
+
+  .artist-role {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-top: 0.3rem;
+    opacity: 0;
+    transition: opacity 0.3s 0.05s;
+  }
+
+  .artist-card:hover .artist-role { opacity: 1; }
+
+  /* RELEASES placeholder */
+  #releases {
+    border-top: 1px solid rgba(240,237,232,0.06);
+  }
+
+  .releases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .release-row {
+    display: grid;
+    grid-template-columns: 4rem 3.2rem 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid rgba(240,237,232,0.06);
+    position: relative;
+    cursor: pointer;
+    transition: padding-left 0.3s;
+  }
+
+  .release-art {
+    width: 3.2rem;
+    height: 3.2rem;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .release-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(30%);
+    transition: filter 0.3s;
+  }
+
+  .release-row:hover .release-art img { filter: grayscale(0%); }
+
+  .release-row:hover { padding-left: 1rem; }
+
+  .release-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 0;
+    background: var(--purple);
+    transition: height 0.3s;
+  }
+
+  .release-row:hover::before { height: 60%; }
+
+  .release-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--mid);
+    line-height: 1;
+  }
+
+  .release-info .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    margin-bottom: 0.2rem;
+  }
+
+  .release-info .meta {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--offwhite);
+    opacity: 0.4;
+  }
+
+  .release-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--purple);
+    border: 1px solid var(--purple-line);
+    padding: 0.3rem 0.7rem;
+    border-radius: 1px;
+  }
+
+  /* CONTACT */
+  #contact {
+    border-top: 1px solid rgba(240,237,232,0.06);
+    background: var(--black);
+  }
+
+  #contact section {
+    max-width: 1200px;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: start;
+  }
+
+  .contact-text p {
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--offwhite);
+    opacity: 0.6;
+    margin-bottom: 2rem;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid rgba(240,237,232,0.06);
+    text-decoration: none;
+    color: var(--white);
+    transition: padding-left 0.25s, color 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contact-link::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: var(--purple-glow);
+    transition: width 0.3s;
+  }
+
+  .contact-link:hover::before { width: 100%; }
+  .contact-link:hover { padding-left: 1rem; color: var(--purple); }
+
+  .contact-link-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(240,237,232,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .contact-link:hover .contact-link-icon {
+    border-color: var(--purple-line);
+  }
+
+  .contact-link-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .contact-link-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .contact-link-text .platform {
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--offwhite);
+    opacity: 0.5;
+    margin-bottom: 0.2rem;
+  }
+
+  .contact-link:hover .contact-link-text .platform { opacity: 0.8; color: inherit; }
+
+  .contact-link-text .handle {
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    color: var(--white);
+  }
+
+  .contact-link:hover .contact-link-text .handle { color: var(--purple); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid rgba(240,237,232,0.06);
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.12em;
+    color: var(--white);
+  }
+
+  .footer-logo span { color: var(--purple); }
+
+  footer p {
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    color: var(--offwhite);
+    opacity: 0.3;
+  }
+
+  /* HORIZONTAL WAVE BAR */
+  .full-wave-bar {
+    width: 100%;
+    height: 80px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes float {
+    from { transform: translateX(-50%) translateY(0); }
+    to { transform: translateX(-50%) translateY(8px); }
+  }
+
+  @keyframes barPulse {
+    from { transform: scaleY(0.3); }
+    to { transform: scaleY(1); }
+  }
+
+  /* NOISE OVERLAY */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* REVEAL ON SCROLL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* EDIT OVERLAY */
+  .edit-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8,8,8,0.88);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+
+  .edit-overlay.open { display: flex; }
+
+  .edit-panel {
+    background: #111;
+    border: 1px solid rgba(124,58,237,0.3);
+    padding: 2.5rem;
+    width: 420px;
+    max-width: 92vw;
+    position: relative;
+  }
+
+  .edit-panel h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+  }
+
+  .edit-close {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: none;
+    border: none;
+    color: var(--offwhite);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    letter-spacing: 0.1em;
+  }
+
+  .edit-close:hover { opacity: 1; }
+
+  .edit-field {
+    margin-bottom: 1.2rem;
+  }
+
+  .edit-field label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 0.5rem;
+  }
+
+  .edit-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(240,237,232,0.1);
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.7rem 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .edit-field input:focus { border-color: var(--purple-line); }
+
+  .photo-upload-area {
+    border: 1px dashed rgba(124,58,237,0.35);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .photo-upload-area:hover {
+    border-color: var(--purple-line);
+    background: rgba(124,58,237,0.05);
+  }
+
+  .photo-upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .photo-preview {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin: 0 auto 0.75rem;
+    display: block;
+    border: 1px solid rgba(124,58,237,0.3);
+  }
+
+  .photo-upload-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--offwhite);
+    opacity: 0.5;
+  }
+
+  .edit-save {
+    width: 100%;
+    margin-top: 1.5rem;
+    background: var(--purple);
+    border: none;
+    color: var(--white);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+    padding: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .edit-save:hover { background: #6d28d9; }
+
+  /* Edit pencil button on card */
+  .artist-edit-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 4;
+    background: rgba(8,8,8,0.7);
+    border: 1px solid rgba(124,58,237,0.4);
+    color: var(--purple);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 0.7rem;
+  }
+
+  .artist-card:hover .artist-edit-btn { opacity: 1; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    nav ul { gap: 1.5rem; }
+    section { padding: 4rem 1.5rem; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .artists-grid { grid-template-columns: 1fr 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">MUTE<span>.</span>DIVISION</a>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#artists">Artists</a></li>
+    <li><a href="#releases">Releases</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Independent Music Label</p>
+    <h1 class="hero-title">
+      MUTE
+      <span class="division">DIVISION</span>
+    </h1>
+
+  </div>
+  <canvas id="orbCanvas"></canvas>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="about">
+  <section>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p class="section-label">About the label</p>
+        <h2 class="section-title">We amplify<br>silence.</h2>
+        <p>Mute Division is an independent label built for artists who exist outside the mainstream. We work at the intersection of experimental electronic, ambient, and underground club music.</p>
+        <p>Our mission is simple: give visionary artists the infrastructure they deserve, without compromising their sound or creative control.</p>
+        <div class="stat-row">
+          <div class="stat">
+            <div class="num">12<span>+</span></div>
+            <div class="lbl">Artists</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-visual reveal reveal-delay-2">
+        <canvas id="aboutWave"></canvas>
+        <div class="about-visual-label">Live signal</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ARTISTS -->
+<div id="artists" style="border-top: 1px solid rgba(240,237,232,0.06);">
+  <section>
+    <p class="section-label reveal">Our artists</p>
+    <h2 class="section-title reveal reveal-delay-1">The roster</h2>
+    <div class="artists-grid" id="artistsGrid">
+      <!-- cards injected by JS -->
+    </div>
+  </section>
+</div>
+
+<!-- RELEASES -->
+<div id="releases" style="border-top: 1px solid rgba(240,237,232,0.06);">
+  <section>
+    <p class="section-label reveal">Catalogue</p>
+    <h2 class="section-title reveal reveal-delay-1">Recent releases</h2>
+    <div class="releases-list">
+      <a class="release-row reveal" href="https://open.spotify.com/album/0tZ8WGUkbplAaSN7d1oLLr" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+        <div class="release-num">01</div>
+        <div class="release-art"><img src="https://i.scdn.co/image/ab67616d0000b273713563bbd7316bde3c284a02" alt="Merchant Ships (I Want To Remember)"></div>
+        <div class="release-info">
+          <div class="title">Merchant Ships (I Want To Remember)</div>
+          <div class="meta">Merchant Ships &nbsp;·&nbsp; Oct 2025</div>
+        </div>
+        <div class="release-tag">LP</div>
+      </a>
+      <a class="release-row reveal reveal-delay-1" href="https://open.spotify.com/album/3DS1fGaYDk5KwcNrz3u0Qh" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+        <div class="release-num">02</div>
+        <div class="release-art"><img src="https://i.scdn.co/image/ab67616d0000b2734215224c8f2eb313807e7135" alt="Keep Moving"></div>
+        <div class="release-info">
+          <div class="title">Keep Moving</div>
+          <div class="meta">Dead Calm &nbsp;·&nbsp; Sep 2025</div>
+        </div>
+        <div class="release-tag">LP</div>
+      </a>
+      <a class="release-row reveal reveal-delay-2" href="https://open.spotify.com/album/3101yyhhqSwOtf1qqXbh5Q" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+        <div class="release-num">03</div>
+        <div class="release-art"><img src="https://i.scdn.co/image/ab67616d0000b2739228ae7b706d0562d35e3b78" alt="Accept"></div>
+        <div class="release-info">
+          <div class="title">Accept</div>
+          <div class="meta">Dead Calm &nbsp;·&nbsp; Sep 2023</div>
+        </div>
+        <div class="release-tag">LP</div>
+      </a>
+      <a class="release-row reveal" href="https://open.spotify.com/album/5pNYo2aydjdR0n1PrL99d5" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+        <div class="release-num">04</div>
+        <div class="release-art"><img src="https://i.scdn.co/image/ab67616d0000b27390e057744dcd6db9fa958ff3" alt="tooth"></div>
+        <div class="release-info">
+          <div class="title">tooth</div>
+          <div class="meta">lavi kou &nbsp;·&nbsp; Mar 2023</div>
+        </div>
+        <div class="release-tag">Single</div>
+      </a>
+      <a class="release-row reveal reveal-delay-1" href="https://open.spotify.com/album/09jXSgNfpnjn4ftIPQKOsE" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+        <div class="release-num">05</div>
+        <div class="release-art"><img src="https://i.scdn.co/image/ab67616d0000b273fd35290140eaceb7a48d89fa" alt="Maggot"></div>
+        <div class="release-info">
+          <div class="title">Maggot</div>
+          <div class="meta">Dazey and the Scouts &nbsp;·&nbsp; Feb 2017</div>
+        </div>
+        <div class="release-tag">LP</div>
+      </a>
+    </div>
+  </section>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" style="border-top: 1px solid rgba(240,237,232,0.06);">
+  <section>
+    <div class="contact-grid">
+      <div class="contact-text reveal">
+        <p class="section-label">Get in touch</p>
+        <h2 class="section-title">Let's talk<br>signal.</h2>
+        <p>If you're an artist looking to sign with the label, pitch your sound or reach out about a deal — we want to hear you. Drop us a message on any of the channels below or send your material directly to our email.</p>
+      </div>
+      <div class="contact-links reveal reveal-delay-1">
+
+        <a href="https://instagram.com" class="contact-link" target="_blank" rel="noopener">
+          <div class="contact-link-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </div>
+          <div class="contact-link-text">
+            <div class="platform">Instagram</div>
+            <div class="handle">@mutedivision</div>
+          </div>
+        </a>
+
+        <a href="https://soundcloud.com" class="contact-link" target="_blank" rel="noopener">
+          <div class="contact-link-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.175 12.225c-.015 0-.023.01-.023.025l-.265 2.375c0 .015.008.025.023.025.015 0 .023-.01.023-.025l.265-2.375c0-.015-.008-.025-.023-.025zm-.74.84c-.015 0-.023.01-.023.025l-.188 1.535c0 .015.008.025.023.025.015 0 .023-.01.023-.025l.188-1.535c0-.015-.008-.025-.023-.025zm.495-.42c-.015 0-.023.01-.023.025l-.265 1.955c0 .015.008.025.023.025.015 0 .023-.01.023-.025l.265-1.955c0-.015-.008-.025-.023-.025zm.49-.17c-.015 0-.023.01-.023.025l-.268 2.125c0 .015.008.025.023.025.015 0 .023-.01.023-.025l.268-2.125c0-.015-.008-.025-.023-.025zm.49.08c-.015 0-.023.01-.023.025l-.268 2.045c0 .015.008.025.023.025.015 0 .023-.01.023-.025l.268-2.045c0-.015-.008-.025-.023-.025zM4 13.705c-.028 0-.05.022-.05.05v1.645c0 .028.022.05.05.05s.05-.022.05-.05V13.755c0-.028-.022-.05-.05-.05zm.49-.44c-.028 0-.05.022-.05.05v2.525c0 .028.022.05.05.05s.05-.022.05-.05v-2.525c0-.028-.022-.05-.05-.05zm.492-.09c-.028 0-.05.022-.05.05v2.61c0 .028.022.05.05.05s.05-.022.05-.05v-2.61c0-.028-.022-.05-.05-.05zm.49.04c-.028 0-.05.022-.05.05v2.57c0 .028.022.05.05.05s.05-.022.05-.05v-2.57c0-.028-.022-.05-.05-.05zm.49.13c-.028 0-.05.022-.05.05v2.44c0 .028.022.05.05.05s.05-.022.05-.05v-2.44c0-.028-.022-.05-.05-.05zm.49.3c-.028 0-.05.022-.05.05v2.14c0 .028.022.05.05.05s.05-.022.05-.05v-2.14c0-.028-.022-.05-.05-.05zm8.77-9.87C13.8 1.987 11.91.5 9.7.5 7.507.5 5.63 1.955 5.05 3.988a4.95 4.95 0 00-1.265-.164c-2.703 0-4.895 2.17-4.895 4.847 0 2.677 2.192 4.847 4.895 4.847h10.11c2.265 0 4.105-1.817 4.105-4.058 0-2.24-1.84-4.057-4.105-4.057a4.16 4.16 0 00-.745.068z"/>
+            </svg>
+          </div>
+          <div class="contact-link-text">
+            <div class="platform">SoundCloud</div>
+            <div class="handle">soundcloud.com/mutedivision</div>
+          </div>
+        </a>
+
+        <a href="mailto:contact@mutedivision.com" class="contact-link">
+          <div class="contact-link-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+          </div>
+          <div class="contact-link-text">
+            <div class="platform">Email</div>
+            <div class="handle">contact@mutedivision.com</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- EDIT OVERLAY -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="edit-panel">
+    <button class="edit-close" id="editClose">✕ close</button>
+    <h3>Edit Artist</h3>
+    <div class="edit-field">
+      <label>Photo</label>
+      <div class="photo-upload-area" id="photoUploadArea">
+        <img class="photo-preview" id="photoPreview" src="" alt="" style="display:none;">
+        <div class="photo-upload-label" id="photoUploadLabel">Click to upload image</div>
+        <input type="file" accept="image/*" id="photoFileInput">
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>Artist Name</label>
+      <input type="text" id="editName" placeholder="Artist Name" maxlength="40">
+    </div>
+    <div class="edit-field">
+      <label>Genre / Style</label>
+      <input type="text" id="editRole" placeholder="e.g. Electronic / Ambient" maxlength="40">
+    </div>
+    <button class="edit-save" id="editSave">Save Artist</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MUTE<span>.</span>DIVISION</div>
+  <p>© 2025 Mute Division. All rights reserved.</p>
+
+</footer>
+
+<script>
+// ── HERO ORBS ──────────────────────────────────────────────────────────────
+const orbCanvas = document.getElementById('orbCanvas');
+const oCtx = orbCanvas.getContext('2d');
+let oW, oH;
+
+function resizeOrb() {
+  oW = orbCanvas.width = orbCanvas.offsetWidth;
+  oH = orbCanvas.height = orbCanvas.offsetHeight;
+}
+resizeOrb();
+window.addEventListener('resize', resizeOrb);
+
+// Each orb: position, velocity, size, phase, color
+const orbs = [];
+const ORB_COUNT = 28;
+
+function makeOrb(i) {
+  const isPurple = Math.random() < 0.38;
+  return {
+    x: Math.random() * (oW || window.innerWidth),
+    y: Math.random() * (oH || window.innerHeight),
+    vx: (Math.random() - 0.5) * 0.18,
+    vy: -(0.08 + Math.random() * 0.22),   // gentle upward drift
+    r: 4 + Math.random() * 38,
+    phase: Math.random() * Math.PI * 2,
+    phaseSpeed: 0.0004 + Math.random() * 0.0006,
+    wobble: 0.3 + Math.random() * 1.2,    // horizontal sway
+    opacity: 0.04 + Math.random() * 0.14,
+    isPurple,
+    // ring vs filled
+    filled: Math.random() < 0.45,
+    // subtle inner ring offset
+    innerScale: 0.55 + Math.random() * 0.3,
+  };
+}
+
+for (let i = 0; i < ORB_COUNT; i++) orbs.push(makeOrb(i));
+
+function drawOrbs(t) {
+  oCtx.clearRect(0, 0, oW, oH);
+
+  orbs.forEach(o => {
+    // update position
+    o.phase += o.phaseSpeed * 16;
+    o.x += o.vx + Math.sin(o.phase) * o.wobble * 0.4;
+    o.y += o.vy;
+
+    // wrap: when orb drifts off top, reappear at bottom
+    if (o.y + o.r < 0) {
+      o.x = Math.random() * oW;
+      o.y = oH + o.r;
+    }
+    if (o.x + o.r < 0) o.x = oW + o.r;
+    if (o.x - o.r > oW) o.x = -o.r;
+
+    const col = o.isPurple ? '124,58,237' : '240,237,232';
+
+    oCtx.save();
+    oCtx.globalAlpha = o.opacity;
+
+    if (o.filled) {
+      // soft filled circle
+      const grad = oCtx.createRadialGradient(
+        o.x - o.r * 0.3, o.y - o.r * 0.3, 0,
+        o.x, o.y, o.r
+      );
+      grad.addColorStop(0, `rgba(${col}, 0.9)`);
+      grad.addColorStop(1, `rgba(${col}, 0)`);
+      oCtx.beginPath();
+      oCtx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+      oCtx.fillStyle = grad;
+      oCtx.fill();
+    } else {
+      // ring only — outer
+      oCtx.beginPath();
+      oCtx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+      oCtx.strokeStyle = `rgba(${col}, 0.6)`;
+      oCtx.lineWidth = 0.8;
+      oCtx.stroke();
+      // inner ring
+      oCtx.beginPath();
+      oCtx.arc(o.x, o.y, o.r * o.innerScale, 0, Math.PI * 2);
+      oCtx.strokeStyle = `rgba(${col}, 0.3)`;
+      oCtx.lineWidth = 0.5;
+      oCtx.stroke();
+    }
+
+    oCtx.restore();
+  });
+
+  // connection lines between close orbs — very faint
+  oCtx.save();
+  for (let i = 0; i < orbs.length; i++) {
+    for (let j = i + 1; j < orbs.length; j++) {
+      const a = orbs[i], b = orbs[j];
+      const dx = a.x - b.x, dy = a.y - b.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const threshold = 120;
+      if (dist < threshold) {
+        const alpha = (1 - dist / threshold) * 0.06;
+        oCtx.globalAlpha = alpha;
+        oCtx.beginPath();
+        oCtx.moveTo(a.x, a.y);
+        oCtx.lineTo(b.x, b.y);
+        const col = (a.isPurple || b.isPurple) ? '124,58,237' : '240,237,232';
+        oCtx.strokeStyle = `rgba(${col},1)`;
+        oCtx.lineWidth = 0.5;
+        oCtx.stroke();
+      }
+    }
+  }
+  oCtx.restore();
+}
+
+// ── ABOUT WAVEFORM ──────────────────────────────────────────────────────────
+const aboutCanvas = document.getElementById('aboutWave');
+const aCtx = aboutCanvas.getContext('2d');
+
+function resizeAbout() {
+  aboutCanvas.width = aboutCanvas.offsetWidth * window.devicePixelRatio;
+  aboutCanvas.height = aboutCanvas.offsetHeight * window.devicePixelRatio;
+  aCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
+window.addEventListener('load', resizeAbout);
+window.addEventListener('resize', resizeAbout);
+
+const aboutWaves = [
+  { speed: 0.0015, amplitude: 40, freq: 0.02, offset: 0, color: '#7c3aed', opacity: 0.7 },
+  { speed: 0.002, amplitude: 20, freq: 0.035, offset: 1.5, color: '#f0ede8', opacity: 0.25 },
+  { speed: 0.001, amplitude: 55, freq: 0.011, offset: 3, color: '#7c3aed', opacity: 0.2 },
+];
+
+function drawAboutWave(t) {
+  const w = aboutCanvas.offsetWidth || 400;
+  const h = aboutCanvas.offsetHeight || 280;
+  aCtx.clearRect(0, 0, w, h);
+  aCtx.strokeStyle = 'rgba(124,58,237,0.15)';
+  aCtx.lineWidth = 0.5;
+  for (let i = 0; i < 8; i++) {
+    aCtx.beginPath();
+    aCtx.moveTo(0, h / 2);
+    aCtx.lineTo(w, h / 2);
+    aCtx.stroke();
+    if (i > 0) {
+      const yy = (h / 2) + (i * h / 18);
+      const yy2 = (h / 2) - (i * h / 18);
+      aCtx.beginPath(); aCtx.moveTo(0, yy); aCtx.lineTo(w, yy); aCtx.stroke();
+      aCtx.beginPath(); aCtx.moveTo(0, yy2); aCtx.lineTo(w, yy2); aCtx.stroke();
+    }
+  }
+  aboutWaves.forEach(wave => {
+    aCtx.beginPath();
+    for (let x = 0; x <= w; x += 1) {
+      const y = h / 2 + Math.sin(x * wave.freq + t * wave.speed * 1000 + wave.offset) * wave.amplitude
+                + Math.cos(x * wave.freq * 2.1 + t * wave.speed * 600) * (wave.amplitude * 0.3);
+      x === 0 ? aCtx.moveTo(x, y) : aCtx.lineTo(x, y);
+    }
+    aCtx.strokeStyle = wave.color;
+    aCtx.globalAlpha = wave.opacity;
+    aCtx.lineWidth = 1.5;
+    aCtx.stroke();
+    aCtx.globalAlpha = 1;
+  });
+}
+
+// ── ARTIST CARDS ──────────────────────────────────────────────────────────
+const DEFAULT_GENRES = [
+  'Cloud Rap / Lo-fi', 'Indie Rock / Riot Grrrl', 'Emo / Post-Rock',
+  'Indie Folk / Shoegaze', 'Midwest Emo / Pop Punk', 'Experimental Hip-Hop'
+];
+
+const artists = [
+  { name: 'lavi kou',              role: 'Cloud Rap / Lo-fi',          photo: 'https://i.scdn.co/image/ab676161000051744df5e5ebc0e90fd4336f21a6' },
+  { name: 'Dazey and the Scouts',  role: 'Indie Rock / Riot Grrrl',    photo: 'https://i.scdn.co/image/ab6761610000e5eb9ccd106476d168df7bef1ed2' },
+  { name: 'Merchant Ships',        role: 'Emo / Post-Rock',            photo: 'https://i.scdn.co/image/ab6761610000e5eb183be04fcd6c7cbf58fc0ec3' },
+  { name: 'Dead Calm',             role: 'Indie Folk / Shoegaze',      photo: 'https://i.scdn.co/image/ab676161000051742db227fe57e42de55bad3c2d' },
+  { name: 'Jank',                  role: 'Midwest Emo / Pop Punk',     photo: 'https://i.scdn.co/image/ab67616d0000b273b596a695a40cad073a02f76b' },
+  { name: 'Lil Ugly Mane',         role: 'Experimental Hip-Hop',       photo: 'https://i.scdn.co/image/ab6761610000e5eb2b234b83cf48992b2c4d8b5c' },
+];
+
+let editingIndex = null;
+
+function buildBarsEl(count) {
+  const wrap = document.createElement('div');
+  wrap.className = 'artist-bars';
+  const heights = [16,28,22,40,32,18,46,28,20,36,24,14,38,26,44,18,30,22];
+  heights.slice(0, count || 18).forEach(h => {
+    const b = document.createElement('div');
+    b.className = 'artist-bar';
+    b.style.height = h + 'px';
+    b.style.setProperty('--dur', (0.8 + Math.random() * 0.8) + 's');
+    b.style.setProperty('--delay', (Math.random() * 0.6) + 's');
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+function renderArtistCards() {
+  const grid = document.getElementById('artistsGrid');
+  grid.innerHTML = '';
+  artists.forEach((a, i) => {
+    const card = document.createElement('div');
+    card.className = 'artist-card reveal' + (i % 3 === 1 ? ' reveal-delay-1' : i % 3 === 2 ? ' reveal-delay-2' : '');
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'artist-placeholder';
+
+    if (a.photo) {
+      const img = document.createElement('img');
+      img.src = a.photo;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0;';
+      placeholder.appendChild(img);
+    } else {
+      placeholder.appendChild(buildBarsEl());
+    }
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'artist-edit-btn';
+    editBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    editBtn.title = 'Edit artist';
+    editBtn.addEventListener('click', e => { e.stopPropagation(); openEdit(i); });
+
+    const info = document.createElement('div');
+    info.className = 'artist-info';
+    info.innerHTML = `<span class="artist-name">${a.name}</span><div class="artist-role">${a.role}</div>`;
+
+    card.appendChild(placeholder);
+    card.appendChild(editBtn);
+    card.appendChild(info);
+    grid.appendChild(card);
+  });
+
+  // re-observe reveals
+  document.querySelectorAll('.reveal:not(.visible)').forEach(r => observer.observe(r));
+}
+
+// ── EDIT PANEL ─────────────────────────────────────────────────────────────
+const overlay = document.getElementById('editOverlay');
+const editClose = document.getElementById('editClose');
+const editName = document.getElementById('editName');
+const editRole = document.getElementById('editRole');
+const editSave = document.getElementById('editSave');
+const photoFileInput = document.getElementById('photoFileInput');
+const photoPreview = document.getElementById('photoPreview');
+const photoUploadLabel = document.getElementById('photoUploadLabel');
+let pendingPhoto = null;
+
+function openEdit(idx) {
+  editingIndex = idx;
+  const a = artists[idx];
+  editName.value = a.name === 'Artist Name' ? '' : a.name;
+  editRole.value = a.role === DEFAULT_GENRES[idx] ? '' : a.role;
+  pendingPhoto = a.photo;
+  if (a.photo) {
+    photoPreview.src = a.photo;
+    photoPreview.style.display = 'block';
+    photoUploadLabel.textContent = 'Click to change photo';
+  } else {
+    photoPreview.style.display = 'none';
+    photoUploadLabel.textContent = 'Click to upload image';
+  }
+  overlay.classList.add('open');
+}
+
+editClose.addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+photoFileInput.addEventListener('change', () => {
+  const file = photoFileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingPhoto = ev.target.result;
+    photoPreview.src = pendingPhoto;
+    photoPreview.style.display = 'block';
+    photoUploadLabel.textContent = 'Click to change photo';
+  };
+  reader.readAsDataURL(file);
+});
+
+editSave.addEventListener('click', () => {
+  if (editingIndex === null) return;
+  artists[editingIndex].name = editName.value.trim() || 'Artist Name';
+  artists[editingIndex].role = editRole.value.trim() || DEFAULT_GENRES[editingIndex];
+  artists[editingIndex].photo = pendingPhoto;
+  overlay.classList.remove('open');
+  renderArtistCards();
+});
+
+// ── MAIN LOOP ─────────────────────────────────────────────────────────────
+function animate(t) {
+  drawOrbs(t);
+  drawAboutWave(t);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// ── SCROLL REVEAL ─────────────────────────────────────────────────────────
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(r => observer.observe(r));
+
+renderArtistCards();
+
+// ── NAV BORDER ON SCROLL ─────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 60) {
+    nav.style.borderBottomColor = 'rgba(124,58,237,0.18)';
+  } else {
+    nav.style.borderBottomColor = 'rgba(240,237,232,0.06)';
+  }
+});
+</script>
+</body>
+</html>
